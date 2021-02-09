@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import time
 import sys
 import copy
 import rospy
@@ -399,26 +400,57 @@ class MoveGroupPythonIntefaceTutorial(object):
     # We wait for the planning scene to update.
     return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
+def scoop(tutorial, j0, j1, j2, j3, j4):
+  #Save j3 and j4 init value
+  initJ2 = j2
+  initJ4 = j4
+  #Make j4 pi/2 to twist scoop vertically
+  j4 = -pi/2
+  #Make j3 more negative to move down into bucket
+  j2 = j2 - pi/2
+  tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+  #delay for 1 second
+  time.sleep(1)
+  #Make j4 init value to do scoop motion and grab object
+  j4 = initJ4
+  tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+  #delay for 1 second
+  time.sleep(1)
+  #Make j3 init j3 to move up from bucket to where it originally was
+  j2 = initJ2
+  tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+  #delay for 1 second
+  time.sleep(1)
+  return
 
 def main():
   try:
+    #Initialize arm
     print "============ Press `Enter` to begin the tutorial by setting up the moveit_commander (press ctrl-d to exit) ..."
     raw_input()
     tutorial = MoveGroupPythonIntefaceTutorial()
 
+    #Move arm to initial position
     print "============ Initial state"
     j0 = 0
-    j1 = -pi/4
-    j2 = 0
-    j3 = -pi/2
+    j1 = 0
+    j2 = pi/4
+    j3 = -pi/4
     j4 = 0
     tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
+    #Change j values and move arm over quadrant we want to scoop
     print "============ Press 'Enter' to move over to the bucket"
     raw_input()
-    j0 = pi/2
+    j0 = pi/4
     tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
+    #Run the scooping function
+    print "============ Press 'Enter' to scoop the net"
+    raw_input()
+    scoop(tutorial, j0, j1, j2, j3, j4)
+
+    #End of test
     print "============ Python tutorial demo complete!"
   except rospy.ROSInterruptException:
     return
