@@ -402,25 +402,20 @@ class MoveGroupPythonIntefaceTutorial(object):
 
 def scoop(tutorial, j0, j1, j2, j3, j4):
   #Save j3 and j4 init value
-  initJ2 = j2
+  initJ3 = j3
   initJ4 = j4
   #Make j4 pi/2 to twist scoop vertically
   j4 = -pi/2
-  #Make j3 more negative to move down into bucket
-  j2 = j2 - pi/2
   tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
-  #delay for 1 second
-  time.sleep(1)
+  #Make j3 more negative to move down into bucket
+  j3 = j3 - pi/4
+  tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
   #Make j4 init value to do scoop motion and grab object
   j4 = initJ4
   tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
-  #delay for 1 second
-  time.sleep(1)
   #Make j3 init j3 to move up from bucket to where it originally was
-  j2 = initJ2
+  j3 = initJ3
   tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
-  #delay for 1 second
-  time.sleep(1)
   return
 
 def main():
