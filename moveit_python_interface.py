@@ -37,8 +37,7 @@ class MoveGroupPythonIntefaceTutorial(object):
   """MoveGroupPythonIntefaceTutorial"""
   def __init__(self):
     super(MoveGroupPythonIntefaceTutorial, self).__init__()
-    ## BEGIN_SUB_TUTORIAL setup
-    ##
+ 
     ## First initialize `moveit_commander`_ and a `rospy`_ node:
     moveit_commander.roscpp_initialize(sys.argv)
     rospy.init_node('move_group_python_interface_tutorial',
@@ -74,10 +73,7 @@ class MoveGroupPythonIntefaceTutorial(object):
                                                    moveit_msgs.msg.DisplayTrajectory,
                                                    queue_size=20)
 
-    ## END_SUB_TUTORIAL
-
-    ## BEGIN_SUB_TUTORIAL basic_info
-    ##
+   
     ## Getting Basic Information
     ## ^^^^^^^^^^^^^^^^^^^^^^^^^
     # We can get the name of the reference frame for this robot:
@@ -109,19 +105,15 @@ class MoveGroupPythonIntefaceTutorial(object):
     self.eef_link = eef_link
     self.group_names = group_names
 
-  def go_to_joint_state(self, joint0, joint1, joint2, joint3, joint4):
-    # Copy class variables to local variables to make the web tutorials more clear.
-    # In practice, you should use the class variables directly unless you have a good
-    # reason not to.
+  def go_to_joint_state(self, joint0, joint1,joint2, joint3, joint4):
+ 
     group = self.group
     dof = self.dof
-    ## BEGIN_SUB_TUTORIAL plan_to_joint_state
-    ##
+   
     ## Planning to a Joint Goal
-    ## ^^^^^^^^^^^^^^^^^^^^^^^^
-
+   
     joint_goal = group.get_current_joint_values()
-    joint_goal[0] = joint0
+    joint_goal[0] = joint0      #[0,-pi/4,0,-pi/2,0,Pi/3]
     joint_goal[1] = joint1
     joint_goal[2] = joint2
     joint_goal[3] = joint3
@@ -140,19 +132,18 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## END_SUB_TUTORIAL
 
     # For testing:
-    # Note that since this section of code will not be included in the tutorials
     # we use the class variable rather than the copied state variable
     current_joints = self.group.get_current_joint_values()
     return all_close(joint_goal, current_joints, 0.01)
 
+
+
+
   def go_to_pose_goal(self):
-    # Copy class variables to local variables to make the web tutorials more clear.
-    # In practice, you should use the class variables directly unless you have a good
-    # reason not to.
+
     group = self.group
     robot_name = self.robot_name
-    ## BEGIN_SUB_TUTORIAL plan_to_pose
-    ##
+   
     ## Planning to a Pose Goal
     ## ^^^^^^^^^^^^^^^^^^^^^^^
     ## We can plan a motion for this group to a desired pose for the
@@ -164,7 +155,7 @@ class MoveGroupPythonIntefaceTutorial(object):
         pose_goal.position.z = 0.15
     else:
         pose_goal.position.x = 0.25
-        pose_goal.position.z = 0.2
+        pose_goal.position.z = 0.28
     group.set_pose_target(pose_goal)
 
     ## Now, we call the planner to compute the plan and execute it.
@@ -175,23 +166,16 @@ class MoveGroupPythonIntefaceTutorial(object):
     # Note: there is no equivalent function for clear_joint_value_targets()
     group.clear_pose_targets()
 
-    ## END_SUB_TUTORIAL
-
+   
     # For testing:
-    # Note that since this section of code will not be included in the tutorials
     # we use the class variable rather than the copied state variable
     current_pose = self.group.get_current_pose().pose
     return all_close(pose_goal, current_pose, 0.01)
 
 
-  def plan_cartesian_path(self, scale=1):
-    # Copy class variables to local variables to make the web tutorials more clear.
-    # In practice, you should use the class variables directly unless you have a good
-    # reason not to.
-    group = self.group
+  def plan_cartesian_path(self, d_x, d_y):
 
-    ## BEGIN_SUB_TUTORIAL plan_cartesian_path
-    ##
+    group = self.group
     ## Cartesian Paths
     ## ^^^^^^^^^^^^^^^
     ## You can plan a Cartesian path directly by specifying a list of waypoints
@@ -199,15 +183,21 @@ class MoveGroupPythonIntefaceTutorial(object):
     ##
     waypoints = []
 
+    scale=0.01
     wpose = group.get_current_pose().pose
-    wpose.position.z += scale * 0.1  # First move up (z)
+    #wpose.position.z += scale * 0.1  # First move up (z)
+    #waypoints.append(copy.deepcopy(wpose))
+
+    wpose.position.x += scale *d_x  # Second move forward in (x) 10.8
     waypoints.append(copy.deepcopy(wpose))
 
-    wpose.position.x += scale * 0.1  # Second move forward in (x)
+    wpose.position.y += scale *d_y  # Second move forward in (y) -11.25
     waypoints.append(copy.deepcopy(wpose))
-
-    wpose.position.z -= scale * 0.1  # Third move down (z)
-    waypoints.append(copy.deepcopy(wpose))
+   
+   
+   
+    #wpose.position.z = scale * 0.0  # Third move down (z)
+    #waypoints.append(copy.deepcopy(wpose))
 
     # We want the Cartesian path to be interpolated at a resolution of 1 cm
     # which is why we will specify 0.01 as the eef_step in Cartesian
@@ -223,13 +213,11 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## END_SUB_TUTORIAL
 
   def display_trajectory(self, plan):
-    # Copy class variables to local variables to make the web tutorials more clear.
-    # In practice, you should use the class variables directly unless you have a good
-    # reason not to.
+
     robot = self.robot
     display_trajectory_publisher = self.display_trajectory_publisher
 
-    ## BEGIN_SUB_TUTORIAL display_trajectory
+    ## BEGIN_SUB display_trajectory
     ##
     ## Displaying a Trajectory
     ## ^^^^^^^^^^^^^^^^^^^^^^^
@@ -260,20 +248,19 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## ^^^^^^^^^^^^^^^^
     ## Use execute if you would like the robot to follow
     ## the plan that has already been computed:
-    group.execute(plan, wait=True)
 
+    group.execute(plan, wait=True)
+   
     ## **Note:** The robot's current joint state must be within some tolerance of the
     ## first waypoint in the `RobotTrajectory`_ or ``execute()`` will fail
     ## END_SUB_TUTORIAL
 
   def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
-    # Copy class variables to local variables to make the web tutorials more clear.
-    # In practice, you should use the class variables directly unless you have a good
-    # reason not to.
+ 
     box_name = self.box_name
     scene = self.scene
 
-    ## BEGIN_SUB_TUTORIAL wait_for_scene_update
+    ## BEGIN_SUB_wait_for_scene_update
     ##
     ## Ensuring Collision Updates Are Receieved
     ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -307,9 +294,6 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## END_SUB_TUTORIAL
 
   def add_box(self, timeout=4):
-    # Copy class variables to local variables to make the web tutorials more clear.
-    # In practice, you should use the class variables directly unless you have a good
-    # reason not to.
     robot_name = self.robot_name
     box_name = self.box_name
     scene = self.scene
@@ -399,6 +383,39 @@ class MoveGroupPythonIntefaceTutorial(object):
     # We wait for the planning scene to update.
     return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
+def scoop(tutorial, j0, j1, j2, j3, j4):
+	#Save j3 and j4 init value
+	initJ3 = j3
+	initJ4 = j4
+
+	#Make j4 pi/2 to twist scoop vertically
+	j4 = -pi/2
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+
+	#Make j3 more negative to move down into bucket
+	j3 = j3 - pi/2
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+
+	#Make j4 init value to do scoop motion and grab object
+	j4 = initJ4
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+
+	#Make j3 init j3 to move up from bucket to where it originally was
+	j3 = initJ3
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+
+	#Move arm to safety position--------------------------------------
+    	j0=j0-pi/2
+      	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+
+	#bend joint3 to drop object down
+	j3 = j3 - pi/3
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+	j4=-pi
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+	j4=initJ4
+	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+	return
 
 def main():
   try:
@@ -408,18 +425,44 @@ def main():
 
     print "============ Initial state"
     j0 = 0
-    j1 = -pi/4
-    j2 = 0
-    j3 = -pi/2
+    j1 = -0.09
+    j2 = 1.3
+    j3 = -1.17
     j4 = 0
     tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
-    print "============ Press 'Enter' to move over to the bucket"
+    #plan cartesian path with x and y
+    dx = 7
+    dy = -7
+    cartesian_plan, fraction = tutorial.plan_cartesian_path(dx,dy)
+    tutorial.display_trajectory(cartesian_plan)
+
+    print "============ Cartesian Path to object ..."
     raw_input()
-    j0 = pi/2
+    tutorial.execute_plan(cartesian_plan)
+
+    #Run the scooping function
+    print "============ Press 'Enter' to scoop the object"
+    raw_input()
+    group = tutorial.group
+    joint_goal = group.get_current_joint_values()
+    j0 = joint_goal[0]
+    j1 = joint_goal[1]
+    j2 = joint_goal[2]
+    j3 = joint_goal[3]
+    j4 = joint_goal[4]
+    scoop(tutorial, j0, j1, j2, j3, j4)
+
+    #return to initial state
+    print "============ Initial state"
+    j0 = 0
+    j1 = -0.09
+    j2 = 1.3
+    j3 = -1.17
+    j4 = 0
     tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
-    print "============ Python tutorial demo complete!"
+    print "============ Trajectory complete!"
   except rospy.ROSInterruptException:
     return
   except KeyboardInterrupt:
