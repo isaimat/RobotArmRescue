@@ -173,7 +173,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     return all_close(pose_goal, current_pose, 0.01)
 
 
-  def plan_cartesian_path(self, d_x, d_y):
+  def plan_cartesian_path(self, d_x, d_y, d_z):
 
     group = self.group
     ## Cartesian Paths
@@ -185,18 +185,16 @@ class MoveGroupPythonIntefaceTutorial(object):
 
     scale=0.01
     wpose = group.get_current_pose().pose
-    #wpose.position.z += scale * 0.1  # First move up (z)
-    #waypoints.append(copy.deepcopy(wpose))
-
-    wpose.position.x += scale *d_x  # Second move forward in (x) 10.8
+    wpose.position.z += scale *d_z  # First move up (z)
     waypoints.append(copy.deepcopy(wpose))
 
     wpose.position.y += scale *d_y  # Second move forward in (y) -11.25
     waypoints.append(copy.deepcopy(wpose))
+
+    wpose.position.x += scale *d_x  # Second move forward in (x) 10.8
+    waypoints.append(copy.deepcopy(wpose))
    
-   
-   
-    #wpose.position.z = scale * 0.0  # Third move down (z)
+    #wpose.position.z = scale * 0  # Third move down (z)
     #waypoints.append(copy.deepcopy(wpose))
 
     # We want the Cartesian path to be interpolated at a resolution of 1 cm
@@ -393,7 +391,7 @@ def scoop(tutorial, j0, j1, j2, j3, j4):
 	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
 	#Make j3 more negative to move down into bucket
-	j3 = j3 - pi/2
+	j3 = j3 - pi/4
 	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
 	#Make j4 init value to do scoop motion and grab object
@@ -405,12 +403,12 @@ def scoop(tutorial, j0, j1, j2, j3, j4):
 	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
 	#Move arm to safety position--------------------------------------
-    	j0=j0-pi/2
+    	j0=-pi/2
       	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 
-	#bend joint3 to drop object down
-	j3 = j3 - pi/3
-	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
+	#Drop object down
+	#j3 = j3 - pi/2
+	#tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 	j4=-pi
 	tutorial.go_to_joint_state(j0, j1, j2, j3, j4)
 	j4=initJ4
@@ -434,7 +432,8 @@ def main():
     #plan cartesian path with x and y
     dx = 7
     dy = -7
-    cartesian_plan, fraction = tutorial.plan_cartesian_path(dx,dy)
+    dz = 6
+    cartesian_plan, fraction = tutorial.plan_cartesian_path(dx,dy,dz)
     tutorial.display_trajectory(cartesian_plan)
 
     print "============ Cartesian Path to object ..."
